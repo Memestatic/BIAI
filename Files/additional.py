@@ -1,4 +1,4 @@
-﻿import torch
+import torch
 
 def hex_to_rgb_tensor(hex_color):
     hex_color = hex_color.lstrip('#')
