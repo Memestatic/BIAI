@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 from PIL import Image
 from dataset import ColorPickerDataset  # upewnij się, że ścieżka importu jest prawidłowa
+import additional
 
 def main():
     # Folder, w którym znajduje się main.py
