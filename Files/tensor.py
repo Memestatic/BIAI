@@ -2,6 +2,8 @@
 import torch
 from torch.utils.data import Dataset
 from PIL import Image
+
+from Files.additional import hex_to_rgb_tensor
 from dataset import ColorPickerDataset  # Twoja oryginalna klasa, która zawiera metodę group_by_image()
 from additional import process_annotation
 
@@ -37,14 +39,15 @@ class ColorPickerTensorDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        # Pobieramy wszystkie adnotacje dla tego obrazu – lista list kodów hex
-        annotations_lists = self.grouped[image_name]
-        # Dla każdej adnotacji przetwarzamy ją funkcją process_annotation,
-        # dzięki czemu uzyskujemy tensor o wymiarach (N, 3)
-        annotations_tensors = [process_annotation(annotation) for annotation in annotations_lists]
+        # Pobieramy pierwszy kolor z pierwszej adnotacji
+            annotation_lists = self.grouped[image_name]
+            if annotation_lists:
+                first_annotation = annotation_lists[0]
+                if first_annotation:
+                    target_color = hex_to_rgb_tensor(first_annotation[0]) # tensor(3,)
+                else:
+                    target_color = torch.zeros(3)
+            else:
+                target_color = torch.zeros(3)
 
-        return {
-            "image": image,  # Tensor obrazu o wymiarach (3, H, W)
-            "annotations": annotations_tensors,  # Lista tensorów (każdy: (N, 3))
-            "image_name": image_name
-        }
+            return image, target_color

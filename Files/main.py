@@ -1,55 +1,28 @@
 ﻿import os
-import matplotlib.pyplot as plt
-from PIL import Image
-from dataset import ColorPickerDataset  # upewnij się, że ścieżka importu jest prawidłowa
-import additional
+
+from Files.visualize import visualize_predictions
+from trainLoop import train_model
+from preview import preview_annotations
+
+# 🔧 Globalne zmienne ścieżek i transformacje
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.join(CURRENT_DIR, "..")
+
+PHOTOS_DIR = os.path.join(PROJECT_ROOT, "Data", "PhotosColorPicker")
+RESULTS_DIR = os.path.join(PROJECT_ROOT, "Data", "Res_ColorPickerCustomPicker")
+
 
 def main():
-    # Folder, w którym znajduje się main.py
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    # Przejście "w górę" o jeden katalog, żeby wyjść z folderu Files do folderu BIAI
-    project_root = os.path.join(current_dir, "..")
+    # Wybierz jedną z opcji:
 
-    photos_dir = os.path.join(project_root, "Data", "PhotosColorPicker")
-    results_dir = os.path.join(project_root, "Data", "Res_ColorPickerCustomPicker")
+    # 1. Wgląd do danych przed uczeniem.
+    #preview_annotations(PHOTOS_DIR, RESULTS_DIR, 1)
 
-    # Tworzymy instancję datasetu
-    dataset = ColorPickerDataset(photos_dir, results_dir)
-    print("Liczba próbek w dataset:", len(dataset))
+    # 2. Uczenie modelu.
+    #train_model(PHOTOS_DIR, RESULTS_DIR, epochs=100, lr=0.001, batch_size=8)
 
-    # Grupujemy próbki według nazwy obrazu
-    grouped = dataset.group_by_image()  # metoda zwraca słownik: { image_name: [lista adnotacji] }
-
-    obraz_count = 0
-    # Iterujemy po pogrupowanych danych
-    for image_name, annotations in grouped.items():
-        obraz_count += 1
-
-        # Budujemy pełną ścieżkę do obrazu
-        image_path = os.path.join(photos_dir, image_name)
-        try:
-            image = Image.open(image_path).convert("RGB")
-        except FileNotFoundError:
-            print(f"Obraz {image_name} nie został znaleziony!")
-            continue
-
-        sample_count = 0
-        # Iterujemy po wszystkich adnotacjach dla danego obrazu
-        for colors in annotations:
-            sample_count += 1
-
-            # Tworzymy figurę z dwoma subplots: górny na obraz, dolny na tekst
-            fig, (ax1, ax2) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [8, 1]}, figsize=(6, 8))
-            ax1.imshow(image)
-            ax1.axis('off')
-
-            ax2.axis('off')
-            ax2.text(0.5, 0.5,
-                     f"Obraz {obraz_count}, Próbka {sample_count}\nKolory: {colors}",
-                     ha='center', va='center', fontsize=12, wrap=True)
-
-            plt.tight_layout()
-            plt.show()
+    # 3. Wizualizacja wyników.
+    visualize_predictions(PHOTOS_DIR, RESULTS_DIR, model_path="saved_model.pth", num_samples=10)
 
 if __name__ == "__main__":
     main()
