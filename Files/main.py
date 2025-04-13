@@ -20,7 +20,7 @@ def main():
     # preview_annotations(PHOTOS_DIR, RESULTS_DIR, max_colors=1)
 
     # 2. Uczenie modelu.
-    # train_model(PHOTOS_DIR, RESULTS_DIR, epochs=100, lr=0.001, batch_size=8)
+    # train_model(PHOTOS_DIR, RESULTS_DIR, epochs=20, lr=0.00001, batch_size=8)
 
     # 3. Wizualizacja wyników.
     # visualize_predictions(PHOTOS_DIR, RESULTS_DIR, model_path="saved_model.pth", num_samples=10)
