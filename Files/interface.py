@@ -19,8 +19,8 @@ class ColorApp:
         self.model.load_state_dict(torch.load(self.model_path))
         self.model.eval()
 
-        self.max_display_width = 600  # szerokość ograniczamy
-        self.padding_below_image = 100  # miejsce na kwadrat i opis
+        self.max_display_width = 400  # 🔻 zmniejszona szerokość obrazka
+        self.padding_below_image = 80  # 🔻 mniej miejsca na dole
 
         if root:
             self.root = root
@@ -31,7 +31,6 @@ class ColorApp:
         self.btn = tk.Button(self.root, text="Wybierz obraz", command=self.load_image)
         self.btn.pack(pady=10)
 
-        # Pusta przestrzeń – będzie modyfikowana dynamicznie
         self.canvas = tk.Canvas(self.root)
         self.canvas.pack()
 
@@ -65,23 +64,22 @@ class ColorApp:
         img_w = self.tk_image.width()
         img_h = self.tk_image.height()
 
-        # 🔄 Ustawiamy canvas na odpowiedni rozmiar
-        total_height = img_h + self.padding_below_image
+        # 🔧 Kwadrat + tekst + margines
+        square_size = 50
+        gap = 20
+        text_gap = 30
+        total_height = img_h + gap + square_size + text_gap + 20
+
         self.canvas.config(width=img_w, height=total_height)
         self.canvas.delete("all")
 
-        # Wyśrodkowanie obrazka
-        x = (img_w) // 2
+        x = img_w // 2
         self.canvas.create_image(x, 0, anchor=tk.N, image=self.tk_image)
 
-        # Predykcja koloru
         rgb = self.predict_dominant_color(file_path)
         hex_color = '#%02x%02x%02x' % tuple(rgb)
 
-        # Kwadrat koloru
-        square_size = 50
-        gap = 20
-        square_x = img_w // 2 - square_size // 2
+        square_x = x - square_size // 2
         square_y = img_h + gap
 
         self.canvas.create_rectangle(
@@ -90,12 +88,11 @@ class ColorApp:
             fill=hex_color, outline=""
         )
 
-        # Tekst RGB pod kwadratem
         self.canvas.create_text(
-            img_w // 2,
-            square_y + square_size + 20,
+            x,
+            square_y + square_size + text_gap,
             text=f"Dominujący kolor: RGB{tuple(rgb)}",
-            font=("Arial", 12)
+            font=("Arial", 11)
         )
 
     def run(self):
