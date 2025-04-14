@@ -17,7 +17,7 @@ def main():
     # Wybierz jedną z opcji:
 
     # 1. Wgląd do danych przed uczeniem.
-    # preview_annotations(PHOTOS_DIR, RESULTS_DIR, max_colors=1)
+     #preview_annotations(PHOTOS_DIR, RESULTS_DIR, max_colors=1)
 
     # 2. Uczenie modelu.
     # train_model(PHOTOS_DIR, RESULTS_DIR, epochs=20, lr=0.00001, batch_size=8)
