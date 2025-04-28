@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 
 from model import SimpleColorPredictor
-from tensor_clustered import ColorPickerClusteredDataset as DatasetClass
+from tensor_clustered_lab import ColorPickerClusteredLabDataset as DatasetClass
 
 def train_model(photos_dir, results_dir, epochs=10, batch_size=8, lr=1e-3):
     transform = transforms.Compose([
