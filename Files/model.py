@@ -28,7 +28,6 @@ class SimpleColorPredictor(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(64, 3),
-            nn.Sigmoid(),  # Skaluje wyjście do zakresu [0, 1]
         )
 
     def forward(self, x):

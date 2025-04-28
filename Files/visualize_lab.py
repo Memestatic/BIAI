@@ -31,7 +31,7 @@ def show_color_patch(ax, color_tensor, title, is_lab=False):
 
 def visualize_predictions(photos_dir, results_dir, model_path=None, num_samples=5):
     transform = transforms.Compose([
-        transforms.Resize((224, 224)),
+        transforms.Resize((420, 420)),
         transforms.ToTensor()
     ])
 
