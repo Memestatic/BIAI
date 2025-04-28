@@ -9,7 +9,7 @@ from skimage import color
 import numpy as np
 
 class ColorAppLab:
-    def __init__(self, root=None, model_path="saved_model.pth", img_size=(224, 224)):
+    def __init__(self, root=None, model_path="saved_model.pth", img_size=(420, 420)):
         self.model_path = model_path
         self.img_size = img_size
         self.transform = transforms.Compose([

@@ -1,9 +1,10 @@
 ﻿import os
 
-from Files.visualize import visualize_predictions
+from Files.interface_lab import ColorAppLab
+from Files.visualize_lab import visualize_predictions
 from trainLoop import train_model
 from preview import preview_annotations
-from interface import ColorApp  # nowa funkcja do odpalenia GUI
+from interface_lab import ColorAppLab
 from tkinter import Tk
 
 # 🔧 Globalne zmienne ścieżek i transformacje
@@ -20,14 +21,14 @@ def main():
      #preview_annotations(PHOTOS_DIR, RESULTS_DIR, max_colors=1)
 
     # 2. Uczenie modelu.
-     #train_model(PHOTOS_DIR, RESULTS_DIR, epochs=300, lr=0.0005, batch_size=8)
+     #train_model(PHOTOS_DIR, RESULTS_DIR, epochs=100, lr=0.01, batch_size=8)
 
     # 3. Wizualizacja wyników.
      #visualize_predictions(PHOTOS_DIR, RESULTS_DIR, model_path="saved_model.pth", num_samples=10)
 
     # 4. GUI – wybór własnego obrazu
     root = Tk()
-    app = ColorApp(root=root, model_path="saved_model.pth", img_size=(224, 224))
+    app = ColorAppLab(root=root, model_path="saved_model.pth", img_size=(224, 224))
     app.run()
 
 if __name__ == "__main__":
