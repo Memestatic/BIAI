@@ -1,7 +1,7 @@
 ﻿import os
 import matplotlib.pyplot as plt
 from PIL import Image
-from dataset import ColorPickerDataset
+from Files.Datasets.dataset import ColorPickerDataset
 
 def preview_annotations(photos_dir, results_dir, max_colors=1):
     """

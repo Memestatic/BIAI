@@ -1,11 +1,9 @@
 ﻿import os
 
-from Files.interface_lab import ColorAppLab
-from Files.visualize_lab import visualize_predictions
-from trainLoop import train_model
-from preview import preview_annotations
-from interface_lab import ColorAppLab
+from Files.Interface.interface_lab import ColorAppLab
 from tkinter import Tk
+
+from Files.Visualize.visualize_lab import visualize_predictions
 
 # 🔧 Globalne zmienne ścieżek i transformacje
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -24,7 +22,7 @@ def main():
      #train_model(PHOTOS_DIR, RESULTS_DIR, epochs=100, lr=0.01, batch_size=8)
 
     # 3. Wizualizacja wyników.
-     #visualize_predictions(PHOTOS_DIR, RESULTS_DIR, model_path="saved_model.pth", num_samples=10)
+     #visualize_predictions(PHOTOS_DIR, RESULTS_DIR, model_path="saved_model.pth", num_samples=20)
 
     # 4. GUI – wybór własnego obrazu
     root = Tk()
