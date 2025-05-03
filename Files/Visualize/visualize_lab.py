@@ -7,7 +7,7 @@ from skimage import color
 import numpy as np
 
 from model import SimpleColorPredictor
-from tensor_clustered_lab import ColorPickerClusteredLabDataset as ColorPickerTensorDataset
+from Files.Datasets.tensor_clustered_lab import ColorPickerClusteredLabDataset as ColorPickerTensorDataset
 
 
 def lab_to_rgb_tensor(lab_tensor):

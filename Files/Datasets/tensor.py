@@ -4,8 +4,7 @@ from torch.utils.data import Dataset
 from PIL import Image
 
 from Files.additional import hex_to_rgb_tensor
-from dataset import ColorPickerDataset  # Twoja oryginalna klasa, która zawiera metodę group_by_image()
-from additional import process_annotation
+from Files.Datasets.dataset import ColorPickerDataset  # Twoja oryginalna klasa, która zawiera metodę group_by_image()
 
 
 class ColorPickerTensorDataset(Dataset):

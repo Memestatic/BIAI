@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 
 from model import SimpleColorPredictor
-from tensor_clustered import ColorPickerClusteredDataset as ColorPickerTensorDataset
+from Files.Datasets.tensor_clustered import ColorPickerClusteredDataset as ColorPickerTensorDataset
 
 def show_color_patch(ax, color_tensor, title):
     """ Pomocnicza funkcja do rysowania prostokąta koloru RGB """
