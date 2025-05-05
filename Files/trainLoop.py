@@ -4,49 +4,62 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 
 from model import SimpleColorPredictor
-from Files.Datasets.tensor_clustered_lab import ColorPickerClusteredLabDataset as DatasetClass
+from Files.Datasets.tensor_clustered import ColorPickerClusteredDataset
 
-def train_model(photos_dir, results_dir, epochs=10, batch_size=8, lr=1e-3):
+def train_model(photos_dir, results_dir,
+                num_colors=1,
+                epochs=10, batch_size=8, lr=1e-3):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Trening na {device} dla num_colors={num_colors}")
+
     transform = transforms.Compose([
-        transforms.Resize((420, 420)),
+        transforms.Resize((420,420)),
         transforms.ToTensor()
     ])
 
-    full_dataset = DatasetClass(photos_dir, results_dir, transform=transform)
+    # Dataset filtruje i przycina do (num_colors,3)
+    full_ds = ColorPickerClusteredDataset(
+        photos_dir, results_dir,
+        transform=transform,
+        num_colors=num_colors,
+        n_clusters=num_colors+1
+    )
 
-    # 🧪 Podział 80/20
-    train_size = int(0.8 * len(full_dataset))
-    val_size = len(full_dataset) - train_size
-    train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
+    # split
+    train_n = int(0.8 * len(full_ds))
+    val_n   = len(full_ds) - train_n
+    train_ds, val_ds = random_split(full_ds, [train_n, val_n])
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+    val_loader   = DataLoader(val_ds,   batch_size=batch_size)
 
-    model = SimpleColorPredictor()
+    # model
+    model     = SimpleColorPredictor(num_colors=num_colors).to(device)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
-    for epoch in range(epochs):
+    for ep in range(1, epochs+1):
         model.train()
-        train_loss = 0.0
-        for images, targets in train_loader:
+        tloss = 0.0
+        for imgs, tg in train_loader:
+            imgs, tg = imgs.to(device), tg.to(device)
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, targets)
+            pr = model(imgs)
+            loss = criterion(pr, tg)
             loss.backward()
             optimizer.step()
-            train_loss += loss.item()
+            tloss += loss.item()
 
-        # 🔍 Walidacja po epoce
         model.eval()
-        val_loss = 0.0
+        vloss = 0.0
         with torch.no_grad():
-            for images, targets in val_loader:
-                outputs = model(images)
-                loss = criterion(outputs, targets)
-                val_loss += loss.item()
+            for imgs, tg in val_loader:
+                imgs, tg = imgs.to(device), tg.to(device)
+                pr = model(imgs)
+                vloss += criterion(pr, tg).item()
 
-        print(f"Epoka {epoch + 1}/{epochs} - Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
+        print(f"Ep {ep}/{epochs}  train={tloss:.4f}  val={vloss:.4f}")
 
-    torch.save(model.state_dict(), "saved_model.pth")
-    print("Model zapisany do: saved_model.pth")
+    out = f"saved_model_{num_colors}.pth"
+    torch.save(model.state_dict(), out)
+    print("Zapisano model:", out)
