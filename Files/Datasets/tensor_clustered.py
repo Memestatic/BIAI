@@ -6,60 +6,72 @@ from sklearn.cluster import KMeans
 import numpy as np
 
 from Files.Datasets.dataset import ColorPickerDataset
-from additional import hex_to_rgb_tensor
-
+from Files.additional import hex_to_rgb_tensor
 
 class ColorPickerClusteredDataset(Dataset):
     """
-    Dataset z etykietami opartymi na klastrowaniu kolorów wszystkich adnotacji dla danego obrazu.
-    Klastry są liczone raz przy inicjalizacji i cache'owane.
+    Zwraca obrazy wraz z tensorami kształtu (num_colors, 3),
+    będącymi top-N centrów klastrów posortowanych malejąco po liczebności.
+    Obrazy z mniej niż num_colors centrami są odrzucane.
     """
+    def __init__(self, photos_dir, results_dir,
+                 transform=None,
+                 num_colors=3,
+                 n_clusters=None):
+        # jeśli nie podano, użyjemy n_clusters = num_colors+1
+        self.num_colors  = num_colors
+        self.n_clusters  = n_clusters or (num_colors + 1)
+        self.transform   = transform
+        self.photos_dir  = photos_dir
 
-    def __init__(self, photos_dir, results_dir, transform=None, n_clusters=3):
-        self.base_dataset = ColorPickerDataset(photos_dir, results_dir, transform)
-        self.grouped = self.base_dataset.group_by_image()
-        self.image_names = list(self.grouped.keys())
-        self.photos_dir = photos_dir
-        self.transform = transform
-        self.n_clusters = n_clusters
+        # bazowy dataset do grupowania adnotacji
+        base = ColorPickerDataset(photos_dir, results_dir)
+        grouped = base.group_by_image()  # dict: image_name -> list of lists of hex
 
-        # Precompute clustered targets
+        # cache i lista zaakceptowanych obrazów
         self.target_cache = {}
-        for image_name in self.image_names:
-            annotations = self.grouped[image_name]
-            all_colors = []
-            for ann in annotations:
-                for hex_code in ann:
-                    rgb = hex_to_rgb_tensor(hex_code)
-                    all_colors.append(rgb.numpy())
+        valid = []
 
-            if not all_colors:
-                self.target_cache[image_name] = torch.zeros(3)
+        for name, annotations in grouped.items():
+            # wektor wszystkich punktów RGB
+            all_pts = []
+            for ann in annotations:
+                for hx in ann:
+                    all_pts.append(hex_to_rgb_tensor(hx).numpy())
+            if len(all_pts) < self.num_colors:
                 continue
 
-            color_array = np.array(all_colors)
+            arr = np.stack(all_pts, axis=0)
+            k = min(self.n_clusters, len(arr))
             try:
-                kmeans = KMeans(n_clusters=min(self.n_clusters, len(color_array)), n_init=10)
-                kmeans.fit(color_array)
-                labels, counts = np.unique(kmeans.labels_, return_counts=True)
-                dominant_idx = labels[np.argmax(counts)]
-                dominant_rgb = kmeans.cluster_centers_[dominant_idx]
-                target_color = torch.tensor(dominant_rgb, dtype=torch.float32)
+                km = KMeans(n_clusters=k, n_init=10)
+                km.fit(arr)
+                labels, counts = np.unique(km.labels_, return_counts=True)
+                # sortujemy centra malejąco po counts
+                idx_sort = np.argsort(-counts)
+                centers = km.cluster_centers_[idx_sort]
             except Exception as e:
-                print(f"[KMeans ERROR] {image_name}: {e}")
-                target_color = torch.tensor(color_array[0], dtype=torch.float32)
+                # gdyby KMeans padł, bierzemy pierwsze num_colors punktów
+                centers = arr[:self.num_colors]
 
-            self.target_cache[image_name] = target_color
+            if centers.shape[0] < self.num_colors:
+                continue
+
+            # bierzemy top num_colors i cache'ujemy jako tensor (num_colors,3)
+            top = centers[:self.num_colors]
+            self.target_cache[name] = torch.tensor(top, dtype=torch.float32)
+            valid.append(name)
+
+        self.image_names = valid
 
     def __len__(self):
         return len(self.image_names)
 
     def __getitem__(self, idx):
-        image_name = self.image_names[idx]
-        image_path = os.path.join(self.photos_dir, image_name)
-        image = Image.open(image_path).convert("RGB")
+        name = self.image_names[idx]
+        path = os.path.join(self.photos_dir, name)
+        img  = Image.open(path).convert("RGB")
         if self.transform:
-            image = self.transform(image)
-
-        target_color = self.target_cache[image_name]
-        return image, target_color
+            img = self.transform(img)
+        tgt = self.target_cache[name]  # (num_colors,3)
+        return img, tgt
