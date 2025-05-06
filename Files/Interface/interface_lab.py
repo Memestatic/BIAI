@@ -4,8 +4,7 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from torchvision import transforms
-from model import SimpleColorPredictor
-from skimage import color
+from Files.model import  SimpleColorPredictor
 import numpy as np
 
 class ColorAppLab:

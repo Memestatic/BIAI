@@ -4,7 +4,7 @@ from tkinter import Tk
 from trainLoop import train_model    # <--- import funkcji treningowej
 from Files.Visualize.visualize import visualize_predictions
 
-# 🔧 Globalne zmienne ścieżek i transformacje
+# Globalne zmienne ścieżek i transformacje
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.join(CURRENT_DIR, "..")
 
@@ -28,14 +28,14 @@ def main():
     #         lr=0.01
     #     )
 
-
         # 3. Wizualizacja wyników.
-    visualize_predictions(num_colors=5, num_samples=10)
+    # visualize_predictions(num_colors=5, num_samples=10)
 
     # 4. GUI – wybór własnego obrazu
-    # root = Tk()
-    # app = ColorAppLab(root=root, model_path="saved_model.pth", img_size=(224, 224))
-    # app.run()
+    root = Tk()
+    app = ColorApp(root)
+    root.mainloop()
+
 
 if __name__ == "__main__":
     main()
