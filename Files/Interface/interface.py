@@ -54,6 +54,9 @@ class ColorApp:
     def choose_image(self):
         file_path = filedialog.askopenfilename(filetypes=[("Obrazy", "*.jpg;*.jpeg;*.png")])
         if file_path:
+            for widget in self.color_frame.winfo_children():
+                widget.destroy()
+
             self.image_path = file_path
             image = Image.open(file_path).convert("RGB")
             resized = self.resize_to_fit(image, 600)

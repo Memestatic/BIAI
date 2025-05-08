@@ -23,9 +23,9 @@ def main():
     #         photos_dir=PHOTOS_DIR,
     #         results_dir=RESULTS_DIR,
     #         num_colors=k,
-    #         epochs=100,
-    #         batch_size=8,
-    #         lr=0.01
+    #         epochs=300,
+    #         batch_size=16,
+    #         lr=0.0005
     #     )
 
         # 3. Wizualizacja wyników.
