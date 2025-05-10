@@ -17,15 +17,16 @@ def main():
 
     #2. Uczenie modelu.
     #trenujemy modele dla K=1..5
+
     # for k in range(1, 6):
     #     print("\n>>> START TRAINING for", k, "colors")
     #     train_model(
     #         photos_dir=PHOTOS_DIR,
     #         results_dir=RESULTS_DIR,
     #         num_colors=k,
-    #         epochs=300,
-    #         batch_size=16,
-    #         lr=0.0005
+    #         epochs=200,
+    #         batch_size=8,
+    #         lr=0.005
     #     )
 
         # 3. Wizualizacja wyników.
