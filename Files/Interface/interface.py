@@ -5,7 +5,8 @@ from tkinter import filedialog, ttk
 from PIL import Image, ImageTk
 from torchvision import transforms
 from Files.model import SimpleColorPredictor
-
+import numpy as np
+from skimage import color
 
 class ColorApp:
     def __init__(self, root, model_dir=".", img_size=(420, 420), max_colors=5):
@@ -28,7 +29,7 @@ class ColorApp:
 
     def build_gui(self):
         top_frame = tk.Frame(self.root)
-        top_frame.pack(pady=(20, 10))  #
+        top_frame.pack(pady=(20, 10))
 
         self.btn_choose = tk.Button(top_frame, text="Choose picture", font=("Arial", 11), command=self.choose_image)
         self.btn_choose.pack(side=tk.LEFT, padx=8)
@@ -38,7 +39,7 @@ class ColorApp:
         self.combo_colors.current(0)
         self.combo_colors.pack(side=tk.LEFT, padx=8)
 
-        self.btn_predict = tk.Button(top_frame, text="Predicate", font=("Arial", 11),
+        self.btn_predict = tk.Button(top_frame, text="Predict", font=("Arial", 11),
                                      command=self.run_prediction)
         self.btn_predict.pack(side=tk.LEFT, padx=8)
 
@@ -52,7 +53,7 @@ class ColorApp:
         self.color_frame.pack(side=tk.LEFT, padx=25)
 
     def choose_image(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Obrazy", "*.jpg;*.jpeg;*.png")])
+        file_path = filedialog.askopenfilename(filetypes=[("Images", "*.jpg;*.jpeg;*.png")])
         if file_path:
             for widget in self.color_frame.winfo_children():
                 widget.destroy()
@@ -77,7 +78,7 @@ class ColorApp:
 
         model_path = os.path.join(self.model_dir, f"saved_model_{self.selected_colors}.pth")
         if not os.path.exists(model_path):
-            print("Model nie istnieje:", model_path)
+            print("Model not found:", model_path)
             return
 
         self.model = SimpleColorPredictor(num_colors=self.selected_colors)
@@ -87,20 +88,28 @@ class ColorApp:
         image = Image.open(self.image_path).convert("RGB")
         input_tensor = self.transform(image).unsqueeze(0)
         with torch.no_grad():
-            output = self.model(input_tensor)[0]
+            output = self.model(input_tensor)[0]  # shape (num_colors, 3)
 
         for widget in self.color_frame.winfo_children():
             widget.destroy()
 
-        for i, rgb in enumerate(output):
-            r, g, b = [int(c.item() * 255) for c in rgb]
+        for i, lab in enumerate(output):
+            r, g, b = self.lab_tensor_to_rgb(lab)
             hex_color = '#%02x%02x%02x' % (r, g, b)
 
             canvas = tk.Canvas(self.color_frame, width=80, height=40, bg=hex_color, highlightthickness=1)
-            canvas.pack(pady=(10 if i == 0 else 6, 2))  # Kolorowy prostokąt pierwszy
+            canvas.pack(pady=(10 if i == 0 else 6, 2))
 
             label = tk.Label(self.color_frame, text=f"RGB({r}, {g}, {b})", bg="white", font=("Arial", 12))
             label.pack(pady=(0, 6))
+
+    @staticmethod
+    def lab_tensor_to_rgb(t):
+        l, a, b = t[0]*100, t[1]*255 - 128, t[2]*255 - 128
+        lab = np.array([l, a, b]).reshape(1, 1, 3)
+        rgb = color.lab2rgb(lab).reshape(3)
+        rgb = np.clip(rgb, 0, 1)
+        return [int(c * 255) for c in rgb]
 
     def resize_to_fit(self, image, max_width):
         img_w, img_h = image.size
