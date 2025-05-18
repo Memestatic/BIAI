@@ -4,7 +4,9 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 
 from model import SimpleColorPredictor
-from Files.Datasets.tensor_clustered import ColorPickerClusteredDataset
+#from Files.Datasets.tensor_clustered import ColorPickerClusteredDataset
+from Files.Datasets.tensor_clustered_lab import ColorPickerClusteredLabMultiDataset
+
 
 def train_model(photos_dir, results_dir,
                 num_colors=1,
@@ -18,11 +20,11 @@ def train_model(photos_dir, results_dir,
     ])
 
     # Dataset filtruje i przycina do (num_colors,3)
-    full_ds = ColorPickerClusteredDataset(
+    full_ds = ColorPickerClusteredLabMultiDataset(
         photos_dir, results_dir,
         transform=transform,
         num_colors=num_colors,
-        n_clusters=num_colors+1
+        n_clusters=num_colors + 1
     )
 
     # split
