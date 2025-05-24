@@ -1,4 +1,20 @@
-﻿import torch
+﻿import os, warnings, logging
+
+# 1) wymusz liczbę rdzeni logicznych
+os.environ['LOKY_MAX_CPU_COUNT'] = str(os.cpu_count())
+
+# 2) filtrowanie warningów z loky
+warnings.filterwarnings(
+    "ignore",
+    message="Could not find the number of physical cores"
+)
+
+# 3) ucisz logger Loky / joblib
+logging.getLogger("loky").setLevel(logging.ERROR)
+logging.getLogger("joblib.externals.loky").setLevel(logging.ERROR)
+
+
+import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
@@ -7,24 +23,36 @@ from model import SimpleColorPredictor
 #from Files.Datasets.tensor_clustered import ColorPickerClusteredDataset
 from Files.Datasets.tensor_clustered_lab import ColorPickerClusteredLabMultiDataset
 
+from torchvision import transforms
 
+augmentations = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(p=0.5),        # losowe odbicie lustrzane
+    transforms.RandomVerticalFlip(p=0.2),          # losowe odbicie pionowe
+    transforms.RandomRotation(degrees=15),         # losowy obrót ±15°
+    transforms.RandomAffine(
+        degrees=0,                                 # bez dodatkowego obrotu
+        translate=(0.1, 0.1),                      # przesunięcie do 10% w osi X i Y
+        scale=(0.9, 1.1),                          # zmiana skali od 90% do 110%
+        shear=10                                   # pochylenie (shear) do 10°
+    ),                                            # jitter kolorów
+    transforms.RandomPerspective(distortion_scale=0.2, p=0.5),  # perspektywa
+    transforms.ToTensor()
+])
 def train_model(photos_dir, results_dir,
                 num_colors=1,
                 epochs=10, batch_size=8, lr=1e-3):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Trening na {device} dla num_colors={num_colors}")
 
-    transform = transforms.Compose([
-        transforms.Resize((420,420)),
-        transforms.ToTensor()
-    ])
+    transform = augmentations
 
     # Dataset filtruje i przycina do (num_colors,3)
     full_ds = ColorPickerClusteredLabMultiDataset(
         photos_dir, results_dir,
         transform=transform,
         num_colors=num_colors,
-        n_clusters=num_colors + 1
+        n_clusters=num_colors + 2
     )
 
     # split
