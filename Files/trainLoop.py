@@ -39,6 +39,16 @@ augmentations = transforms.Compose([
     transforms.RandomPerspective(distortion_scale=0.2, p=0.5),  # perspektywa
     transforms.ToTensor()
 ])
+
+class WeightedMSELoss(nn.Module):
+    def __init__(self, channel_weights):
+        super().__init__()
+        self.register_buffer('w', torch.tensor(channel_weights).view(1, 3))
+
+    def forward(self, pred, target):
+        diff2 = (pred - target)**2
+        weighted = diff2 * self.w
+        return weighted.mean()
 def train_model(photos_dir, results_dir,
                 num_colors=1,
                 epochs=10, batch_size=8, lr=1e-3):
@@ -65,7 +75,7 @@ def train_model(photos_dir, results_dir,
 
     # model
     model     = SimpleColorPredictor(num_colors=num_colors).to(device)
-    criterion = nn.MSELoss()
+    criterion = WeightedMSELoss([2.0, 1.0, 1.0]).to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
     for ep in range(1, epochs+1):
