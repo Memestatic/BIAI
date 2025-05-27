@@ -75,7 +75,7 @@ def train_model(photos_dir, results_dir,
 
     # model
     model     = SimpleColorPredictor(num_colors=num_colors).to(device)
-    criterion = WeightedMSELoss([1.5, 1.5, 1.5]).to(device)
+    criterion = WeightedMSELoss([0.1, 1.0, 1.0]).to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
     for ep in range(1, epochs+1):
