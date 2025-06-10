@@ -1,28 +1,8 @@
-﻿import os, warnings, logging
-
-# 1) wymusz liczbę rdzeni logicznych
-os.environ['LOKY_MAX_CPU_COUNT'] = str(os.cpu_count())
-
-# 2) filtrowanie warningów z loky
-warnings.filterwarnings(
-    "ignore",
-    message="Could not find the number of physical cores"
-)
-
-# 3) ucisz logger Loky / joblib
-logging.getLogger("loky").setLevel(logging.ERROR)
-logging.getLogger("joblib.externals.loky").setLevel(logging.ERROR)
-
-
-import torch
+﻿import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader, random_split
-from torchvision import transforms
-
 from model import SimpleColorPredictor
-#from Files.Datasets.tensor_clustered import ColorPickerClusteredDataset
 from Files.Datasets.tensor_clustered_lab import ColorPickerClusteredLabMultiDataset
-
 from torchvision import transforms
 
 augmentations = transforms.Compose([
@@ -35,7 +15,7 @@ augmentations = transforms.Compose([
         translate=(0.1, 0.1),                      # przesunięcie do 10% w osi X i Y
         scale=(0.9, 1.1),                          # zmiana skali od 90% do 110%
         shear=10                                   # pochylenie (shear) do 10°
-    ),                                            # jitter kolorów
+    ),
     transforms.RandomPerspective(distortion_scale=0.2, p=0.5),  # perspektywa
     transforms.ToTensor()
 ])
